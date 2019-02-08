@@ -8,7 +8,7 @@ function print_streaming_url{
 	else
 		local port=$(grep 'HTTPPort' $config_file | awk '{ print $2 }')
 		local url_end=$(grep '<Feed' /etc/audio.conf | awk '{ print $2 }' | awk -F '.ffm' '{ print $1 }')
-		local ip='_' #already implemented function on device
+		local ip=$(print_ip_addr) #already implemented function on device
 		echo "http://$ip:$port/$url_end"
 	fi
 }
