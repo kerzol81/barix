@@ -13,6 +13,10 @@ function print_streaming_url{
 	fi
 }
 
+function print_streaming_url_href{	
+	echo "$(print_streaming_url) target="_blank">Listen</a>"
+}
+
 function print_recording_path{
 	echo "/media/data"
 }
