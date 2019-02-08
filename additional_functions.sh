@@ -12,3 +12,7 @@ function print_streaming_url{
 		echo "http://$ip:$port/$url_end"
 	fi
 }
+
+function print_recording_path{
+	echo "/media/data"
+}
