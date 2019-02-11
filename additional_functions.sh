@@ -1,22 +1,34 @@
-#!/bin/bash
-set -x
+# Additional functions
 
-function print_streaming_url(){	
-	local config_file='/etc/ffserver.conf'
-	if [ ! -e $config_file ];then
-		echo "no config file"
-	else
-		local port=$(grep 'HTTPPort' $config_file | awk '{ print $2 }')
-		local url_end=$(grep '<Feed' /etc/audio.conf | awk '{ print $2 }' | awk -F '.ffm' '{ print $1 }')
-		local ip=$(print_ip_addr) #already implemented function on device
-		echo "http://$ip:$port/$url_end"
-	fi
+# print device MAC address in colon-separated format, capital letters
+function print_mac_addr()
+{
+        cat /sys/class/net/eth0/address | tr "[a-z]" "[A-Z]"
 }
 
-function print_streaming_url_href(){	
-	echo "$(print_streaming_url) target="_blank">Listen</a>"
+# print device IP  address
+# optional parameter $1 defines the interface, default is eth0
+function print_ip_addr()
+{
+        if [ $# -lt 1 ] ; then interface=eth0
+        else interface="$1"
+        fi
+
+	ifconfig "$interface" | sed -n 's/.*inet addr:\([0-9.]\+\).*/\1/p' | tr -d "\\n"
+}
+
+function print_streaming_url(){
+        config_file='/etc/ffserver.conf'
+        if [ ! -e $config_file ];then
+                echo "no config file"
+        else
+            	port=$(grep 'HTTPPort' $config_file | awk '{ print $2 }')
+                end=$(grep '<Feed' ${config_file} | awk '{ print $2 }' | awk -F '.ffm' '{ print $1 }')
+                ip=$(print_ip_addr)
+                echo "http://${ip}:${port}/${end}"
+        fi
 }
 
 function print_recording_path(){
-	echo "/media/data"
+        echo "/media/data"
 }
