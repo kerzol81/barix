@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 
-function print_streaming_url{	
+function print_streaming_url(){	
 	local config_file='/etc/ffserver.conf'
 	if [ ! -e $config_file ];then
 		echo "no config file"
@@ -13,10 +13,10 @@ function print_streaming_url{
 	fi
 }
 
-function print_streaming_url_href{	
+function print_streaming_url_href(){	
 	echo "$(print_streaming_url) target="_blank">Listen</a>"
 }
 
-function print_recording_path{
+function print_recording_path(){
 	echo "/media/data"
 }
