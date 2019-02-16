@@ -7,7 +7,8 @@ recording_sec=60
 recording_sample_rate=44100
 
 streaming_port=4444
-streaming_sample_rate=128
+streaming_bit_rate=128
+streaming_sample_rate=16000
 ffserver_config="$recording_folder/audio.conf"
 
 if [ ! -e "$ffserver_config" ];then
@@ -29,9 +30,9 @@ CustomLog /var/log/ffserver.log
 	Feed audio.ffm
 	Format mp2
 	Audiocodec libmp3lame
-	AudioBitRate ${streaming_sample_rate}
+	AudioBitRate ${streaming_bit_rate}
 	AudioChannels 2
-	AudioSampleRate 16000
+	AudioSampleRate ${streaming_sample_rate}
 	NoVideo
 	StartSendOnKey
 </Stream>
