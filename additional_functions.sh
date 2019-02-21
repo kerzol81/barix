@@ -32,3 +32,12 @@ function print_streaming_url(){
 function print_recording_path(){
         echo "/media/data"
 }
+
+function print_board_temperature(){
+	t='/sys/class/thermal/thermal_zone0/temp'
+	if [ ! -e $t ];then
+		echo "no data from sensor"
+	else
+		echo $(( $(cat $t) / 1000 )) 
+	fi
+}
