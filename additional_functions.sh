@@ -34,10 +34,13 @@ function print_recording_path(){
 }
 
 function print_board_temperature(){
-	t='/sys/class/thermal/thermal_zone0/temp'
+	local t='/sys/class/thermal/thermal_zone0/temp'
 	if [ ! -e $t ];then
 		echo "no data from sensor"
 	else
-		echo $(( $(cat $t) / 1000 )) 
+		echo -n $(( $(cat $t) / 1000 ))
+		echo -n "."
+		echo -n $(( $(cat $t) )) | cut -c 3
 	fi
 }
+
