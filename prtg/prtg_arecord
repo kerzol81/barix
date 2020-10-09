@@ -2,7 +2,7 @@
 
 PID=$(pgrep arecord)
 
-if [ "$PID" == "" ] ; then
+if [ "$PID" = "-n" ] ; then
         echo "1:200:$service is not running."
 else
     	echo "0:200:$service is running."
