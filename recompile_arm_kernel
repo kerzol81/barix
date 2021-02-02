@@ -1,0 +1,22 @@
+#Tutorial:
+
+https://github.com/umiddelb/armhf/wiki/How-To-compile-a-custom-Linux-kernel-for-your-ARM-device
+
+# do not edit manually 
+# defconfig or .config
+# files
+
+# Barix devshell:
+
+# select kernel modules in devshell:
+
+make menuconfig
+make
+
+# compile the kernel
+bitbake -f linux
+
+# modules:
+huawei_cdc_ncm
+cdc_ncm
+cdc_wdm
