@@ -10,6 +10,7 @@ https://github.com/umiddelb/armhf/wiki/How-To-compile-a-custom-Linux-kernel-for-
 
 # select kernel modules in devshell:
 
+make mproper  --> clean junks
 make menuconfig
 make
 
@@ -20,3 +21,8 @@ bitbake -f linux
 huawei_cdc_ncm
 cdc_ncm
 cdc_wdm
+
+# Huawei:
+Device Drivers
+    Network Device Support
+          USB Network adapters
