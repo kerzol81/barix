@@ -1,0 +1,57 @@
+#!/bin/sh
+
+
+echo "What is the carrier APN?"
+read -r apn 
+
+while true
+do
+	echo "Does your carrier need username and password? [Y/n]"
+	read -r usernpass
+	
+	case $usernpass in
+		[Yy]* )  while true 
+        		do 
+        
+        			echo "Enter username"
+        			read -r username
+
+        			echo "Enter password"
+        			read -r password
+        			break 
+        		done
+
+        		break;;
+		
+		[Nn]* )  break;;
+			*)  echo "Wrong Selection, Select among Y or n";;
+	esac
+done
+
+#echo "Getting operation mode..."
+#qmicli -d /dev/cdc-wdm0 --dms-get-operating-mode
+
+echo "Setting operation mode to online"
+qmicli -d /dev/cdc-wdm0 --dms-set-operating-mode='online'
+
+echo "Setting RAW IP mode"
+
+ip link set wwan0 down
+
+echo 'Y' | tee /sys/class/net/wwan0/qmi/raw_ip
+
+echo 'Y' | tee /sys/class/net/wwan0/qmi/raw_ip
+
+qmicli -d /dev/cdc-wdm0 --wda-get-data-format
+
+if [  -z "$username" ]
+then
+
+	qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn="$apn",ip-type=4" --client-no-release-cid
+else
+   	qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn="$apn",username="$username",password="$password",ip-type=4" --client-no-release-cid
+fi
+
+udhcpc -q -f -i wwan0
+
+echo "Internet connection is up"
