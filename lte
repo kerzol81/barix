@@ -30,7 +30,7 @@ done
 
 echo "[+] Setting operation mode to online"
 if ! qmicli -d /dev/cdc-wdm0 --dms-set-operating-mode='online';then
-        echo "[-] Error: cdcw-dm0 mode to online"
+        echo "[-] Error: cdc-wdm0 mode to online"
         exit 1
 fi
 
