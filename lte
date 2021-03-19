@@ -1,15 +1,15 @@
 #!/bin/sh
 
 
-echo "What is the carrier APN?"
+echo "Enter APN name [internet.telekom, etc ]?"
 read -r apn 
 
 while true
 do
-	echo "Does your carrier need username and password? [Y/n]"
-	read -r usernpass
+	echo "Does the carrier need username and password? [Y/n]"
+	read -r user_input
 	
-	case $usernpass in
+	case $user_input in
 		[Yy]* )  while true 
         		do 
         
@@ -24,7 +24,7 @@ do
         		break;;
 		
 		[Nn]* )  break;;
-			*)  echo "Wrong Selection, Select among Y or n";;
+			*)  echo "Select Y or n";;
 	esac
 done
 
@@ -40,17 +40,17 @@ ip link set wwan0 down
 
 echo 'Y' | tee /sys/class/net/wwan0/qmi/raw_ip
 
-echo 'Y' | tee /sys/class/net/wwan0/qmi/raw_ip
-
 qmicli -d /dev/cdc-wdm0 --wda-get-data-format
 
-if [  -z "$username" ];then
+if [  -z "$username" ]
+then
 
-	qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn='$apn',ip-type=4" --client-no-release-cid
+	qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn="$apn",ip-type=4" --client-no-release-cid
 else
-   	qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn='$apn',username='$username',password='$password',ip-type=4" --client-no-release-cid
+   	qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn=$apn,username=$username,password=$password,ip-type=4" --client-no-release-cid
 fi
 
+echo "requesting IP..."
 udhcpc -q -f -i wwan0
 
 echo "Internet connection is up"
