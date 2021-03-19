@@ -45,7 +45,7 @@ qmicli -d /dev/cdc-wdm0 --wda-get-data-format
 if [  -z "$username" ]
 then
 
-	qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn="$apn",ip-type=4" --client-no-release-cid
+	qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn=$apn,ip-type=4" --client-no-release-cid
 else
    	qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn=$apn,username=$username,password=$password,ip-type=4" --client-no-release-cid
 fi
