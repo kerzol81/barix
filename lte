@@ -28,29 +28,43 @@ do
 	esac
 done
 
-#echo "Getting operation mode..."
-#qmicli -d /dev/cdc-wdm0 --dms-get-operating-mode
-
 echo "[+] Setting operation mode to online"
-qmicli -d /dev/cdc-wdm0 --dms-set-operating-mode='online'
+if ! qmicli -d /dev/cdc-wdm0 --dms-set-operating-mode='online';then
+        echo "[-] Error: cdcw-dm0 mode to online"
+        exit 1
+fi
+
 
 echo "[+] Setting RAW IP mode"
 
-ip link set wwan0 down
+if ! ip link set wwan0 down;then
+        echo "[-] Error: wwan0 down"
+        exit 1
+fi
 
-echo 'Y' | tee /sys/class/net/wwan0/qmi/raw_ip
 
-qmicli -d /dev/cdc-wdm0 --wda-get-data-format
+if ! echo 'Y' | tee /sys/class/net/wwan0/qmi/raw_ip;then
+        echo "[-] Error: raw IP mode"
+        exit 1
+fi
+
+if ! qmicli -d /dev/cdc-wdm0 --wda-get-data-format;then
+        echo "[-] Error: cdc-wdm0 data format"
+        exit 1
+fi 
 
 if [  -z "$username" ]
 then
-
 	qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn=$apn,ip-type=4" --client-no-release-cid
 else
    	qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn=$apn,username=$username,password=$password,ip-type=4" --client-no-release-cid
 fi
 
 echo "[+] Requesting IP..."
-udhcpc -q -f -i wwan0
+if ! udhcpc -q -f -i wwan0;then
+        echo "[-] Error: dhcp request on wwan0"
+fi
 
 echo "[+] Internet connection is up"
+
+exit 0
