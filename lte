@@ -1,22 +1,22 @@
 #!/bin/sh
 
 
-echo "Enter APN name [internet.telekom, etc ]:"
+echo "[+] Enter APN name [internet.telekom, etc ]:"
 read -r apn 
 
 while true
 do
-	echo "Does the carrier need username and password? [Y/n]"
+	echo "[+] Does the carrier need username and password? [Y/n]"
 	read -r user_input
 	
 	case $user_input in
 		[Yy]* )  while true 
         		do 
         
-        			echo "Enter username"
+        			echo "[+] Enter username"
         			read -r username
 
-        			echo "Enter password"
+        			echo "[+] Enter password"
         			read -r password
         			break 
         		done
@@ -24,17 +24,17 @@ do
         		break;;
 		
 		[Nn]* )  break;;
-			*)  echo "Select Y or n";;
+			*)  echo "[-] Select Y or n";;
 	esac
 done
 
 #echo "Getting operation mode..."
 #qmicli -d /dev/cdc-wdm0 --dms-get-operating-mode
 
-echo "Setting operation mode to online"
+echo "[+] Setting operation mode to online"
 qmicli -d /dev/cdc-wdm0 --dms-set-operating-mode='online'
 
-echo "Setting RAW IP mode"
+echo "[+] Setting RAW IP mode"
 
 ip link set wwan0 down
 
@@ -50,7 +50,7 @@ else
    	qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="apn=$apn,username=$username,password=$password,ip-type=4" --client-no-release-cid
 fi
 
-echo "requesting IP..."
+echo "[+] Requesting IP..."
 udhcpc -q -f -i wwan0
 
-echo "Internet connection is up"
+echo "[+] Internet connection is up"
