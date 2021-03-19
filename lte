@@ -35,7 +35,7 @@ if ! qmicli -d /dev/cdc-wdm0 --dms-set-operating-mode='online';then
 fi
 
 
-echo "[+] Setting RAW IP mode"
+echo "[+]  Reconfigure the network interface for raw-ip protocol"
 
 if ! ip link set wwan0 down;then
         echo "[-] Error: wwan0 down"
