@@ -9,3 +9,5 @@ connection_status=$(qmicli --wds-get-packet-service-status -d /dev/cdc-wdm0 | gr
 imsi=$(qmicli --dms-uim-get-imsi -d /dev/cdc-wdm0 | grep 'IMSI:' | awk '{print $2}' | sed "s/'//g")
 
 qmicli -d /dev/cdc-wdm0 --dms-get-band-capabilities
+
+qmicli -d /dev/cdc-wdm0 --nas-get-system-info
