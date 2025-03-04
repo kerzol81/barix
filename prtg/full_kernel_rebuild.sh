@@ -1,7 +1,7 @@
 #!/bin/bash
 # 03.03.2025 KZ - Yocto Kernel Rebuild Script
-
-set -x
+#set -x
+set -e
 
 YOCTO_DIR='/home/kerenyiz/oe-core'
 
