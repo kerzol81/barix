@@ -10,7 +10,6 @@ namespace BarixDiscover
 {
     class Program
     {
-        // Configuration
         private const string BroadcastAddress = "255.255.255.255";
         private const int Port = 30718;
         private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(2);
@@ -18,68 +17,67 @@ namespace BarixDiscover
         private static readonly byte[] BarixPrefix = new byte[] { 0x00, 0x08, 0xE1 };
         private static readonly byte[] DiscoveryPayload = new byte[] { 0x81, 0x88, 0x53, 0x81, 0x01 };
 
-        // ANSI‐style colors (Windows 10+ & *nix)
-        private static readonly ConsoleColor InfoColor    = ConsoleColor.Blue;
-        private static readonly ConsoleColor SuccessColor= ConsoleColor.Green;
-        private static readonly ConsoleColor WarnColor   = ConsoleColor.Yellow;
-        private static readonly ConsoleColor ErrorColor  = ConsoleColor.Red;
-        private static int WarningLine = -1;
+        private static readonly string INFO = "#0d6efd";
+        private static readonly string SUCCESS = "#28a745";
+        private static readonly string ERROR = "#dc3545";
+        private static readonly string WARN = "#ffc107";
+
+        private static int warningLine = -1;
 
         static void Main()
         {
             Console.OutputEncoding = Encoding.UTF8;
             var seen = new HashSet<string>();
+            bool printedWarning = false;
 
-            // Print header
-            WriteColor("Discovering Barix devices (CTRL-C to stop)\n", InfoColor);
-            var header = string.Format("{0,-15}  {1,-17}", "Device IP", "MAC Address");
-            WriteColor(header + "\n", InfoColor);
-            WriteColor(new string('-', header.Length) + "\n", InfoColor);
+            WriteColor("Discovering Barix devices (CTRL-C to stop)\n", INFO);
+            string header = $"{ "Device IP",-15}  {"MAC Address",-17}";
+            WriteColor(header + "\n", INFO);
+            WriteColor(new string('-', header.Length) + "\n", INFO);
 
             Console.CancelKeyPress += (s, e) =>
             {
-                WriteColor($"\nDone — found {seen.Count} device(s).\n", SuccessColor);
+                WriteColor($"\nDone — found {seen.Count} device(s).\n", SUCCESS);
+                Environment.Exit(0);
             };
 
             try
             {
                 while (true)
                 {
-                    var replies = DiscoverOnce();
-                    bool anyFound = false;
-
-                    // If we previously printed a warning, clear it now
-                    if (WarningLine >= 0 && replies.Any())
+                    if (printedWarning)
                     {
                         ClearWarning();
+                        printedWarning = false;
                     }
+
+                    var replies = DiscoverOnce();
+                    bool anyFound = false;
 
                     foreach (var data in replies)
                     {
                         if (data.Length < 15) continue;
 
-                        // MAC is bytes 5-10
                         var mac = data.Skip(5).Take(6).ToArray();
-                        // filter OUI
                         if (!mac.Take(3).SequenceEqual(BarixPrefix)) continue;
-                        var macText = BitConverter.ToString(mac).Replace('-', ':');
+
+                        string macText = BitConverter.ToString(mac).Replace('-', ':');
                         if (seen.Contains(macText)) continue;
 
                         seen.Add(macText);
-                        // IP is bytes 11-14
                         var ipBytes = data.Skip(11).Take(4).ToArray();
-                        var ipText = string.Join(".", ipBytes);
+                        string ipText = string.Join(".", ipBytes);
 
-                        WriteColor($"{ipText,-15}  {macText,-17}\n", SuccessColor);
+                        WriteColor($"{ipText,-15}  {macText,-17}\n", SUCCESS);
                         anyFound = true;
                     }
 
-                    // If no device this cycle, print one timestamped warning
                     if (!anyFound)
                     {
-                        var ts = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-                        var msg = $"{ts} No devices found in this cycle.";
-                        PrintWarning(msg);
+                        string ts = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                        string msg = $"{ts} No devices found in this cycle.";
+                        PrintWarning(msg, WARN);
+                        printedWarning = true;
                     }
 
                     Thread.Sleep(Interval);
@@ -87,23 +85,21 @@ namespace BarixDiscover
             }
             catch (Exception ex)
             {
-                WriteColor($"Error: {ex.Message}\n", ErrorColor);
+                WriteColor($"Error: {ex.Message}\n", ERROR);
                 Environment.Exit(1);
             }
         }
 
         static List<byte[]> DiscoverOnce()
         {
-            // Broadcast the GET packet
             using (var sendClient = new UdpClient())
             {
                 sendClient.EnableBroadcast = true;
                 sendClient.Client.Bind(new IPEndPoint(IPAddress.Any, Port));
                 sendClient.Send(DiscoveryPayload, DiscoveryPayload.Length,
-                                new IPEndPoint(IPAddress.Parse(BroadcastAddress), Port));
+                    new IPEndPoint(IPAddress.Parse(BroadcastAddress), Port));
             }
 
-            // Listen for replies
             var results = new List<byte[]>();
             using (var recvClient = new UdpClient(Port))
             {
@@ -113,7 +109,7 @@ namespace BarixDiscover
                 {
                     try
                     {
-                        var remote = new IPEndPoint(IPAddress.Any, 0);
+                        IPEndPoint remote = new IPEndPoint(IPAddress.Any, 0);
                         var data = recvClient.Receive(ref remote);
                         results.Add(data);
                     }
@@ -126,28 +122,35 @@ namespace BarixDiscover
             return results;
         }
 
-        static void WriteColor(string text, ConsoleColor color)
+        static void WriteColor(string text, string hexColor)
         {
-            var prev = Console.ForegroundColor;
-            Console.ForegroundColor = color;
-            Console.Write(text);
-            Console.ForegroundColor = prev;
+            var (r, g, b) = HexToRgb(hexColor);
+            Console.Write($"\x1b[38;2;{r};{g};{b}m{text}\x1b[0m");
         }
 
-        static void PrintWarning(string msg)
+        static void PrintWarning(string msg, string hexColor)
         {
-            // record current cursor line
-            WarningLine = Console.CursorTop;
-            WriteColor(msg + "\n", WarnColor);
+            warningLine = Console.CursorTop;
+            WriteColor(msg + "\n", hexColor);
         }
 
         static void ClearWarning()
         {
-            // move cursor to warning line, clear it, then reset cursor below header
-            Console.SetCursorPosition(0, WarningLine);
-            Console.Write(new string(' ', Console.WindowWidth));
-            Console.SetCursorPosition(0, WarningLine);
-            WarningLine = -1;
+            if (warningLine < 0) return;
+            Console.SetCursorPosition(0, warningLine);
+            Console.Write("\x1b[2K"); // ANSI: clear entire line
+            Console.SetCursorPosition(0, warningLine);
+            warningLine = -1;
+        }
+
+        static (int r, int g, int b) HexToRgb(string hex)
+        {
+            hex = hex.TrimStart('#');
+            return (
+                Convert.ToInt32(hex.Substring(0, 2), 16),
+                Convert.ToInt32(hex.Substring(2, 2), 16),
+                Convert.ToInt32(hex.Substring(4, 2), 16)
+            );
         }
     }
 }
