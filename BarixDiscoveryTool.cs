@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace BarixDiscover
 {
@@ -26,6 +27,7 @@ namespace BarixDiscover
 
         static void Main()
         {
+            EnableVirtualTerminal(); // Enable ANSI color support in Windows
             Console.OutputEncoding = Encoding.UTF8;
             var seen = new HashSet<string>();
             bool printedWarning = false;
@@ -138,7 +140,7 @@ namespace BarixDiscover
         {
             if (warningLine < 0) return;
             Console.SetCursorPosition(0, warningLine);
-            Console.Write("\x1b[2K"); // ANSI: clear entire line
+            Console.Write("\x1b[2K"); // Clear entire line
             Console.SetCursorPosition(0, warningLine);
             warningLine = -1;
         }
@@ -151,6 +153,27 @@ namespace BarixDiscover
                 Convert.ToInt32(hex.Substring(2, 2), 16),
                 Convert.ToInt32(hex.Substring(4, 2), 16)
             );
+        }
+
+        // === ENABLE ANSI COLOR SUPPORT ON WINDOWS ===
+        private const int STD_OUTPUT_HANDLE = -11;
+        private const uint ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004;
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern IntPtr GetStdHandle(int nStdHandle);
+
+        [DllImport("kernel32.dll")]
+        private static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
+
+        [DllImport("kernel32.dll")]
+        private static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
+
+        static void EnableVirtualTerminal()
+        {
+            var handle = GetStdHandle(STD_OUTPUT_HANDLE);
+            GetConsoleMode(handle, out uint mode);
+            mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+            SetConsoleMode(handle, mode);
         }
     }
 }
